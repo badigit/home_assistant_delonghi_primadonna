@@ -89,9 +89,9 @@
         "state": {
           "unknown": "Unknown",
           "detached": "Detached",
-          "steam": "Steam",
-          "milk_frother": "Milk frother",
-          "milk_frother_cleaning": "Milk frother cleaning",
+          "steam": "Steam / hot water",
+          "milk_frother": "Milk carafe",
+          "milk_frother_cleaning": "Milk carafe cleaning",
           "cleaning": "Cleaning position"
         }
       },
@@ -146,7 +146,7 @@
           "empty_drip_tray": "Empty drip tray",
           "hydraulic_circuit_problem": "Hydraulic circuit problem",
           "tank_is_in_position": "Tank is in position",
-          "clean_knob": "Clean knob",
+          "rinse_milk_carafe": "Rinse milk carafe",
           "coffee_beans_empty_two": "Coffee beans empty (secondary)",
           "tank_too_full": "Tank too full",
           "bean_hopper_absent": "Bean hopper absent",

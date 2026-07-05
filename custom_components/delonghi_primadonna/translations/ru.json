@@ -67,9 +67,9 @@
         "state": {
           "unknown": "Неизвестно",
           "detached": "Отсоединена",
-          "steam": "Пар",
-          "milk_frother": "Капучинатор",
-          "milk_frother_cleaning": "Очистка капучинатора",
+          "steam": "Пар / кипяток",
+          "milk_frother": "Молочник",
+          "milk_frother_cleaning": "Очистка молочника",
           "cleaning": "Положение очистки"
         }
       },
@@ -104,7 +104,7 @@
           "empty_drip_tray": "Опорожните поддон для капель",
           "hydraulic_circuit_problem": "Проблема с гидросистемой",
           "tank_is_in_position": "Резервуар на месте",
-          "clean_knob": "Ручка очистки",
+          "rinse_milk_carafe": "Промойте молочник",
           "coffee_beans_empty_two": "Контейнер для зерен 2 пуст",
           "tank_too_full": "Резервуар переполнен",
           "bean_hopper_absent": "Контейнер для зерен отсутствует",

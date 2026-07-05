@@ -73,7 +73,10 @@ DEVICE_STATUS = {
     11: "empty_drip_tray",
     12: "hydraulic_circuit_problem",
     13: "tank_is_in_position",
-    14: "clean_knob",
+    # Post-brew "rinse the milk carafe" prompt (dismissible via the
+    # machine's back button) — not a hard fault. Distinct from the
+    # "clean_knob" MachineSwitch bit in machine_switch.py.
+    14: "rinse_milk_carafe",
     15: "coffee_beans_empty_two",
     16: "tank_too_full",
     17: "bean_hopper_absent",
