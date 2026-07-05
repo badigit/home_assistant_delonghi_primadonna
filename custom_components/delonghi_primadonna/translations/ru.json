@@ -69,7 +69,7 @@
           "detached": "Отсоединена",
           "steam": "Пар / кипяток",
           "milk_frother": "Молочник",
-          "milk_frother_cleaning": "Очистка молочника",
+          "milk_frother_cleaning": "Молочник промывается",
           "cleaning": "Положение очистки"
         }
       },
@@ -86,7 +86,7 @@
           "rinsing": "Промывка",
           "milk_preparation": "Приготовление молока",
           "hot_water": "Горячая вода",
-          "milk_cleaning": "Очистка капучинатора",
+          "milk_cleaning": "Очистка молочной системы",
           "chocolate_preparation": "Приготовление шоколада",
           "steam": "Пар",
           "unknown_state": "Неизвестное состояние",
