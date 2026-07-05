@@ -281,6 +281,8 @@ class DelongiPrimadonna:
         self.hostname = ''
         self.friendly_name = ''
         self.cooking = BEVERAGE_NONE
+        # Beverage chosen in the select entity, brewed only on button press
+        self.selected_beverage = BEVERAGE_NONE
         self.connected = False
         self.notify = False
         self.steam_nozzle = NOZZLE_STATE[-1]
@@ -343,6 +345,11 @@ class DelongiPrimadonna:
         if len(self.available_beverages) <= 1:
             # Fallback to legacy enum if no recipes
             self.available_beverages = [*AvailableBeverage]
+
+    @property
+    def recipe_map(self) -> dict:
+        """Beverage name -> recipe info (id, coffee_qty, milk_qty)."""
+        return self._recipe_map
 
     async def disconnect(self):
         """Disconnect from the device."""

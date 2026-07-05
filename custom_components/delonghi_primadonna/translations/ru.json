@@ -39,6 +39,12 @@
     "button": {
       "power_on": {
         "name": "Включить"
+      },
+      "make_beverage": {
+        "name": "Приготовить напиток"
+      },
+      "cancel_beverage": {
+        "name": "Отменить приготовление"
       }
     },
     "switch": {

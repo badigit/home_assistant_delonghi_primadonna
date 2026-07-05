@@ -39,6 +39,12 @@
     "button": {
       "power_on": {
         "name": "Turn on"
+      },
+      "make_beverage": {
+        "name": "Make beverage"
+      },
+      "cancel_beverage": {
+        "name": "Cancel beverage"
       }
     },
     "switch": {

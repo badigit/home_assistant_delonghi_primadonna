@@ -87,7 +87,8 @@ class ProfileSelect(DelonghiDeviceEntity, SelectEntity, RestoreEntity):
 
 
 class BeverageSelect(DelonghiDeviceEntity, SelectEntity, RestoreEntity):
-    """Beverage start implementation by the select"""
+    """Beverage chooser. Only stores the selection; the dedicated
+    "Make beverage" button starts brewing it."""
 
     _attr_current_option = BEVERAGE_NONE
     _attr_translation_key = 'make_beverage'
@@ -100,15 +101,29 @@ class BeverageSelect(DelonghiDeviceEntity, SelectEntity, RestoreEntity):
         """Return available beverages from machine model."""
         return self.device.available_beverages
 
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Expose properties of the selected recipe (no brewing)."""
+        recipe = self.device.recipe_map.get(self._attr_current_option)
+        if not recipe:
+            return None
+        return {
+            'recipe_id': recipe.get('id'),
+            'coffee_qty': recipe.get('coffee_qty'),
+            'milk_qty': recipe.get('milk_qty'),
+        }
+
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
         if (last_state := await self.async_get_last_state()) is not None:
             if last_state.state in self.device.available_beverages:
                 self._attr_current_option = last_state.state
+        self.device.selected_beverage = self._attr_current_option
 
     async def async_select_option(self, option: str) -> None:
-        """Select beverage action"""
-        self.hass.async_create_task(self.device.beverage_start(option))
+        """Store the chosen beverage without starting it."""
+        self._attr_current_option = option
+        self.device.selected_beverage = option
 
 
 class EnergySaveModeSelect(DelonghiDeviceEntity, SelectEntity, RestoreEntity):
