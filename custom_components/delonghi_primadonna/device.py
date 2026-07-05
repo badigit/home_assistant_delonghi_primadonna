@@ -283,6 +283,10 @@ class DelongiPrimadonna:
         self.cooking = BEVERAGE_NONE
         # Beverage chosen in the select entity, brewed only on button press
         self.selected_beverage = BEVERAGE_NONE
+        # Settings read back from the machine (indexes; None until read)
+        self.water_temperature: int | None = None
+        self.water_hardness: int | None = None
+        self.auto_power_off: int | None = None
         self.connected = False
         self.notify = False
         self.steam_nozzle = NOZZLE_STATE[-1]
@@ -350,6 +354,42 @@ class DelongiPrimadonna:
     def recipe_map(self) -> dict:
         """Beverage name -> recipe info (id, coffee_qty, milk_qty)."""
         return self._recipe_map
+
+    async def read_settings(self) -> None:
+        """Read machine settings so entities reflect the real state.
+
+        Uses ParameterRead (0x95) for the same parameter ids the
+        integration writes via 0x90: 0x3f sound/light/energy bitmask,
+        0x3d water temperature, 0x32 water hardness, 0x3e auto power off.
+        """
+        for pid in (0x3F, 0x3D, 0x32, 0x3E):
+            await self.send_command(
+                [0x0D, 0x08, 0x95, 0x0F, 0x00, pid, 0x01, 0x00, 0x00]
+            )
+            await asyncio.sleep(0.3)
+
+    def _parse_parameter(self, value: bytes) -> None:
+        """Parse a ParameterRead (0x95) response and update settings.
+
+        Layout: d0 <len> 95 0f 00 <pid> 00 00 00 <val> <crc16>
+        """
+        if len(value) < 11:
+            return
+        pid = value[5]
+        val = value[9]
+        if pid == 0x3F:
+            # Bit layout mirrors _make_switch_command (string index ->
+            # bit): index3=energy(0x10), index4=cup_light(0x08),
+            # index5=sounds(0x04).
+            self.switches.energy_save = bool(val & 0x10)
+            self.switches.cup_light = bool(val & 0x08)
+            self.switches.sounds = bool(val & 0x04)
+        elif pid == 0x3D:
+            self.water_temperature = val
+        elif pid == 0x32:
+            self.water_hardness = val
+        elif pid == 0x3E:
+            self.auto_power_off = val
 
     async def disconnect(self):
         """Disconnect from the device."""
@@ -555,6 +595,8 @@ class DelongiPrimadonna:
                 self.active_profile_id = profile_id
         elif answer_id == 0xA2:
             await self._parse_statistics(value)
+        elif answer_id == 0x95:
+            self._parse_parameter(value)
 
         hex_value = hexlify(value, ' ')
 
@@ -743,6 +785,8 @@ class DelongiPrimadonna:
             if self.active_profile_id is None:
                 self.active_profile_id = 1
             self._profiles_loaded = True
+            # Read current settings so entities reflect real machine state
+            await self.read_settings()
 
     async def set_time(self, dt: datetime) -> None:
         """Set device clock from provided datetime."""

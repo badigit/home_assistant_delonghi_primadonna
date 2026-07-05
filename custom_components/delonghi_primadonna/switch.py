@@ -53,14 +53,18 @@ class DelongiPrimadonnaCupLightSwitch(
 ):
     """This switch enable/disable the cup light"""
 
-    _attr_is_on = False
     _attr_icon = 'mdi:lightbulb'
     _attr_translation_key = 'cup_light'
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
         if (last_state := await self.async_get_last_state()) is not None:
-            self._attr_is_on = last_state.state == 'on'
+            self.device.switches.cup_light = last_state.state == 'on'
+
+    @property
+    def is_on(self) -> bool:
+        """Reflect the real machine state (read back on connect)."""
+        return self.device.switches.cup_light
 
     @property
     def entity_category(self, **kwargs: Any) -> None:
@@ -70,12 +74,10 @@ class DelongiPrimadonnaCupLightSwitch(
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the device on."""
         self.hass.async_create_task(self.device.cup_light_on())
-        self._attr_is_on = True
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
         self.hass.async_create_task(self.device.cup_light_off())
-        self._attr_is_on = False
 
 
 class DelongiPrimadonnaNotificationSwitch(
@@ -117,14 +119,18 @@ class DelongiPrimadonnaPowerSaveSwitch(
     DelonghiDeviceEntity, ToggleEntity, RestoreEntity
 ):
 
-    _attr_is_on = False
     _attr_icon = 'mdi:lightning-bolt'
     _attr_translation_key = 'energy_save_mode'
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
         if (last_state := await self.async_get_last_state()) is not None:
-            self._attr_is_on = last_state.state == 'on'
+            self.device.switches.energy_save = last_state.state == 'on'
+
+    @property
+    def is_on(self) -> bool:
+        """Reflect the real machine state (read back on connect)."""
+        return self.device.switches.energy_save
 
     @property
     def entity_category(self, **kwargs: Any) -> None:
@@ -134,26 +140,28 @@ class DelongiPrimadonnaPowerSaveSwitch(
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the energy save on"""
         self.hass.async_create_task(self.device.energy_save_on())
-        self._attr_is_on = True
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the energy save off"""
         self.hass.async_create_task(self.device.energy_save_off())
-        self._attr_is_on = False
 
 
 class DelongiPrimadonnaSoundsSwitch(
     DelonghiDeviceEntity, ToggleEntity, RestoreEntity
 ):
 
-    _attr_is_on = False
     _attr_icon = 'mdi:volume-high'
     _attr_translation_key = 'sounds'
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
         if (last_state := await self.async_get_last_state()) is not None:
-            self._attr_is_on = last_state.state == 'on'
+            self.device.switches.sounds = last_state.state == 'on'
+
+    @property
+    def is_on(self) -> bool:
+        """Reflect the real machine state (read back on connect)."""
+        return self.device.switches.sounds
 
     @property
     def entity_category(self, **kwargs: Any) -> None:
@@ -163,12 +171,10 @@ class DelongiPrimadonnaSoundsSwitch(
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the sounds on."""
         self.hass.async_create_task(self.device.sound_alarm_on())
-        self._attr_is_on = True
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the sounds off."""
         self.hass.async_create_task(self.device.sound_alarm_off())
-        self._attr_is_on = False
 
 
 class DelongiPrimadonnaTimeSyncSwitch(

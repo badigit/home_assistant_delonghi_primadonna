@@ -144,12 +144,22 @@ class EnergySaveModeSelect(DelonghiDeviceEntity, SelectEntity, RestoreEntity):
         if (last_state := await self.async_get_last_state()) is not None:
             self._attr_current_option = last_state.state
 
+    @property
+    def current_option(self) -> str | None:
+        """Reflect the auto power off value read from the machine."""
+        if self.device.auto_power_off is not None:
+            for name, val in POWER_OFF_OPTIONS.items():
+                if val == self.device.auto_power_off:
+                    return name
+        return self._attr_current_option
+
     async def async_select_option(self, option: str) -> None:
         """Select energy save mode action"""
         power_off_interval = POWER_OFF_OPTIONS.get(option)
         self.hass.async_create_task(
             self.device.set_auto_power_off(power_off_interval)
         )
+        self.device.auto_power_off = power_off_interval
         self._attr_current_option = option
 
 
@@ -171,12 +181,21 @@ class WaterHardnessSelect(DelonghiDeviceEntity, SelectEntity, RestoreEntity):
         """Return the category of the entity."""
         return EntityCategory.CONFIG
 
+    @property
+    def current_option(self) -> str | None:
+        """Reflect the water hardness read from the machine."""
+        idx = self.device.water_hardness
+        if idx is not None and 0 <= idx < len(self._attr_options):
+            return self._attr_options[idx]
+        return self._attr_current_option
+
     async def async_select_option(self, option: str) -> None:
         """Select water hardness action"""
         water_hardness = self._attr_options.index(option)
         self.hass.async_create_task(
             self.device.set_water_hardness(water_hardness)
         )
+        self.device.water_hardness = water_hardness
         self._attr_current_option = option
 
 
@@ -201,10 +220,19 @@ class WaterTemperatureSelect(
         """Return the category of the entity."""
         return EntityCategory.CONFIG
 
+    @property
+    def current_option(self) -> str | None:
+        """Reflect the water temperature read from the machine."""
+        idx = self.device.water_temperature
+        if idx is not None and 0 <= idx < len(self._attr_options):
+            return self._attr_options[idx]
+        return self._attr_current_option
+
     async def async_select_option(self, option: str) -> None:
         """Select water temperature action"""
         water_temperature = self._attr_options.index(option)
         self.hass.async_create_task(
             self.device.set_water_temperature(water_temperature)
         )
+        self.device.water_temperature = water_temperature
         self._attr_current_option = option
