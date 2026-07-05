@@ -86,6 +86,26 @@ DEVICE_STATUS = {
     99: "Unknown alarm",
 }
 
+# Main machine state — byte 9 of the 0x75 monitor packet. This is the
+# machine's operating state, NOT an alarm bit (DEVICE_STATUS above maps
+# alarm *bit positions*). Values decoded from the ECAM protocol, see
+# EcamMachineState in mmastrac/longshot.
+MACHINE_STATE = {
+    0: "Standby",
+    1: "Turning on",
+    2: "Shutting down",
+    4: "Descaling",
+    5: "Steam preparation",
+    6: "Recovery",
+    7: "Ready",
+    8: "Rinsing",
+    10: "Milk preparation",
+    11: "Hot water",
+    12: "Milk cleaning",
+    16: "Chocolate preparation",
+    17: "Steam",
+}
+
 """
 Command bytes
 """
