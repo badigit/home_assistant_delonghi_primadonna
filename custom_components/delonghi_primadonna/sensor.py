@@ -11,7 +11,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from .base_entity import DelonghiDeviceEntity
-from .const import DOMAIN
+from .const import DEVICE_STATUS, DOMAIN, MACHINE_STATE
 from .device import NOZZLE_STATE, DelongiPrimadonna
 from .machine_switch import MachineSwitch
 
@@ -107,8 +107,17 @@ class DelongiPrimadonnaStatusSensor(
     Shows the actual device status
     """
 
+    _attr_device_class = SensorDeviceClass.ENUM
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_translation_key = 'device_status'
+
+    # Full set of possible status slugs: machine states + alarm states +
+    # the "unknown_*" fallbacks used by device.py for unmapped values.
+    _attr_options = [
+        *MACHINE_STATE.values(),
+        *DEVICE_STATUS.values(),
+        'unknown_state',
+    ]
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
@@ -126,7 +135,7 @@ class DelongiPrimadonnaStatusSensor(
 
     @property
     def icon(self):
-        if self.device.status == "Ready":
+        if self.device.status == "ready":
             return 'mdi:thumb-up-outline'
         return 'mdi:alert-circle-outline'
 

@@ -305,7 +305,7 @@ class DelongiPrimadonna:
         self.notify = False
         self.steam_nozzle = NOZZLE_STATE[-1]
         self.service = 0
-        self.status = "Ready"
+        self.status = "ready"
         # Dispensing telemetry from the 0x75 monitor packet: status byte 9
         # is 7 both when idle and dispensing, so sub_status (byte 10) and
         # progress (byte 11) are what actually reveal an active preparation.
@@ -655,15 +655,17 @@ class DelongiPrimadonna:
         # Alarm bitmask — feeds the Descale binary sensor (bit 2)
         self.service = monitor_data.alarms
 
-        # Display status: show first active alarm, or machine state
+        # Display status: show first active alarm, or machine state.
+        # Fall back to a stable "unknown_alarm"/"unknown_state" slug for any
+        # value not in our maps, so the ENUM sensor never receives free text.
         if monitor_data.alarms > 0:
             for i in range(32):
                 if (monitor_data.alarms >> i) & 1:
-                    self.status = DEVICE_STATUS.get(i, f"Alarm {i}")
+                    self.status = DEVICE_STATUS.get(i, "unknown_alarm")
                     break
         else:
             self.status = MACHINE_STATE.get(
-                monitor_data.status, f"State {monitor_data.status}"
+                monitor_data.status, "unknown_state"
             )
 
         # Active switches (v2 only; v1 uses different byte offsets)
