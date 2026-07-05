@@ -205,6 +205,20 @@ RECIPE_ID_TO_BEVERAGE = {
 }
 
 
+# Custom recipes are numbered 19-24 in the bundled catalog, but the machine
+# expects protocol beverage ids 230-235 (0xE6-0xEB) to start/stop them.
+# Verified on ECAM650.55: id 230 starts the first custom slot ("Asya mix").
+_CUSTOM_CATALOG_RANGE = range(19, 25)
+_CUSTOM_PROTOCOL_BASE = 230
+
+
+def _protocol_recipe_id(catalog_id: int) -> int:
+    """Map a bundled-catalog recipe id to the machine protocol id."""
+    if catalog_id in _CUSTOM_CATALOG_RANGE:
+        return _CUSTOM_PROTOCOL_BASE + (catalog_id - _CUSTOM_CATALOG_RANGE.start)
+    return catalog_id
+
+
 def _build_stop_command(recipe_id: int) -> list[int]:
     """Build a stop command for any recipe ID."""
     return [0x0D, 0x08, 0x83, 0xF0, recipe_id & 0xFF, 0x02, 0x06, 0x00, 0x00]
@@ -292,6 +306,11 @@ class DelongiPrimadonna:
         self.steam_nozzle = NOZZLE_STATE[-1]
         self.service = 0
         self.status = "Ready"
+        # Dispensing telemetry from the 0x75 monitor packet: status byte 9
+        # is 7 both when idle and dispensing, so sub_status (byte 10) and
+        # progress (byte 11) are what actually reveal an active preparation.
+        self.sub_status = 0
+        self.progress = 0
         self.switches = DeviceSwitches()
         self.active_switches: list[MachineSwitch] = []
         self.sync_time = False
@@ -354,6 +373,11 @@ class DelongiPrimadonna:
     def recipe_map(self) -> dict:
         """Beverage name -> recipe info (id, coffee_qty, milk_qty)."""
         return self._recipe_map
+
+    @property
+    def dispensing(self) -> bool:
+        """True while the machine is preparing a beverage."""
+        return self.sub_status != 0
 
     async def read_settings(self) -> None:
         """Read machine settings so entities reflect the real state.
@@ -617,6 +641,11 @@ class DelongiPrimadonna:
         # Power state
         self.switches.is_on = monitor_data.status > 0
 
+        # Dispensing telemetry: sub_status (byte 10) is non-zero while a
+        # beverage is being prepared; byte 11 carries a progress value.
+        self.sub_status = monitor_data.sub_status
+        self.progress = raw_packet[11] if len(raw_packet) > 11 else 0
+
         # Nozzle state (only present in v2 / 0x75 packets)
         if monitor_data.nozzle_state != -1:
             self.steam_nozzle = NOZZLE_STATE.get(
@@ -720,12 +749,13 @@ class DelongiPrimadonna:
                 )
                 await self.send_command(BEVERAGE_COMMANDS[legacy].on)
             else:
+                pid = _protocol_recipe_id(rid)
                 _LOGGER.info(
-                    "Starting %s (recipe %d) via dynamic",
-                    beverage, rid,
+                    "Starting %s (recipe %d -> protocol %d) via dynamic",
+                    beverage, rid, pid,
                 )
                 cmd = _build_start_command(
-                    rid, recipe['coffee_qty'], recipe['milk_qty']
+                    pid, recipe['coffee_qty'], recipe['milk_qty']
                 )
                 await self.send_command(cmd)
             self.cooking = beverage
@@ -738,7 +768,9 @@ class DelongiPrimadonna:
             return
         recipe = self._recipe_map.get(self.cooking)
         if recipe:
-            await self.send_command(_build_stop_command(recipe['id']))
+            await self.send_command(
+                _build_stop_command(_protocol_recipe_id(recipe['id']))
+            )
         else:
             _LOGGER.warning("Cannot cancel unknown beverage: %s", self.cooking)
         self.cooking = BEVERAGE_NONE

@@ -26,9 +26,36 @@ async def async_setup_entry(
             DelongiPrimadonnaDescaleSensor(delongh_device, hass),
             DelongiPrimadonnaFilterSensor(delongh_device, hass),
             DelongiPrimadonnaEnabledSensor(delongh_device, hass),
+            DelongiPrimadonnaDispensingSensor(delongh_device, hass),
         ]
     )
     return True
+
+
+class DelongiPrimadonnaDispensingSensor(
+    DelonghiDeviceEntity, BinarySensorEntity
+):
+    """Shows if a beverage is currently being prepared.
+
+    The machine keeps status byte 9 at 7 (ReadyOrDispensing) both when
+    idle and while pouring, so a real preparation is detected via
+    sub_status (byte 10) being non-zero.
+    """
+
+    _attr_device_class = BinarySensorDeviceClass.RUNNING
+    _attr_translation_key = 'dispensing'
+    _attr_icon = 'mdi:coffee-to-go'
+
+    @property
+    def is_on(self) -> bool:
+        return self.device.dispensing
+
+    @property
+    def extra_state_attributes(self):
+        return {
+            'sub_status': self.device.sub_status,
+            'progress': self.device.progress,
+        }
 
 
 class DelongiPrimadonnaEnabledSensor(
