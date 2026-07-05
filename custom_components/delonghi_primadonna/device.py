@@ -936,17 +936,31 @@ class DelongiPrimadonna:
             )
             current_offset += 4
 
-        # 2. Subsequent parameters are [ID 2B] + [Value 4B]
+        # 2. Subsequent parameters are [ID 2B] + [Value 4B]. Within a
+        # single response these ids are always sequential (start_id,
+        # start_id+1, ...). If a gap appears, the packet has likely been
+        # mis-framed (e.g. the start of the next A2 response leaked into
+        # this one) and the following bytes cannot be trusted as further
+        # entries — stop instead of storing a bogus value under a
+        # legitimate-looking id.
         while current_offset + 6 <= len(data) - 2:
             pid = (
                 (data[current_offset] << 8)
                 | data[current_offset + 1]
             )
+            if pid != current_param_id + 1:
+                _LOGGER.debug(
+                    "Statistics Parser: pid %s not sequential after %s, "
+                    "stopping (raw=%s)",
+                    pid, current_param_id, hex_data,
+                )
+                break
             val = int.from_bytes(
                 data[current_offset + 2:current_offset + 6],
                 byteorder='big',
             )
             self.statistics[pid] = val
+            current_param_id = pid
             _LOGGER.debug(
                 "Statistics Parser.Parsed (Explicit): ID %s = %s",
                 pid, val,

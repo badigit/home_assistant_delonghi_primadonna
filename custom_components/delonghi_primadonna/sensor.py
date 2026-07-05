@@ -14,6 +14,7 @@ from .base_entity import DelonghiDeviceEntity
 from .const import DEVICE_STATUS, DOMAIN, MACHINE_STATE
 from .device import NOZZLE_STATE, DelongiPrimadonna
 from .machine_switch import MachineSwitch
+from .model import get_machine_model
 
 
 async def async_setup_entry(
@@ -29,6 +30,7 @@ async def async_setup_entry(
             DelongiPrimadonnaNozzleSensor(delongh_device, hass),
             DelongiPrimadonnaStatusSensor(delongh_device, hass),
             DelongiPrimadonnaSwitchesSensor(delongh_device, hass),
+            DelongiPrimadonnaMachineInfoSensor(delongh_device, hass),
 
             # Statistics sensors
             DelongiPrimadonnaStatisticsSensor(
@@ -171,6 +173,58 @@ class DelongiPrimadonnaSwitchesSensor(
     def entity_category(self, **kwargs: Any) -> None:
         """Return the category of the entity."""
         return EntityCategory.DIAGNOSTIC
+
+
+class DelongiPrimadonnaMachineInfoSensor(
+    DelonghiDeviceEntity, SensorEntity
+):
+    """Static summary of the machine's known properties.
+
+    All values come from the bundled MachinesModels.json catalog (matched
+    by product_code) plus in-memory device state — no BLE traffic is
+    generated to populate this sensor.
+    """
+
+    _attr_device_class = None
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_translation_key = 'machine_info'
+    _attr_icon = 'mdi:information-outline'
+
+    @property
+    def native_value(self):
+        return self.device.model
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return static machine properties as attributes."""
+        attributes: dict[str, Any] = {
+            'product_code': self.device.product_code,
+            'mac': self.device.mac,
+            'image_url': self.device.image_url,
+        }
+
+        machine = get_machine_model(self.device.product_code)
+        if machine is not None:
+            attributes.update({
+                'type': machine.type,
+                'connection_type': machine.connectionType,
+                'protocol_version': machine.protocolVersion,
+                'protocol_minor_version': machine.protocol_minor_version,
+                'n_profiles': machine.nProfiles,
+                'n_custom_recipes': machine.nCustomRecipes,
+                'n_standard_recipes': machine.nStandardRecipes,
+                'multibeverage': machine.multibeverage,
+                'international_sku': machine.internationalsku,
+                'cup_light_settings': machine.cup_light_settings,
+                'time_settings': machine.time_settings,
+                'water_hardness_settings': machine.water_hardness_settings,
+                'global_temperature': machine.globalTemperature,
+                'energy_saving_settings': machine.energy_saving_settings,
+                'auto_off_settings': machine.auto_off_settings,
+                'filter_settings': machine.filter_settings,
+            })
+
+        return attributes
 
 
 class DelongiPrimadonnaStatisticsSensor(

@@ -189,6 +189,9 @@
       },
       "additional_coffee": {
         "name": "Additional Coffee"
+      },
+      "machine_info": {
+        "name": "Machine info"
       }
     }
   },
