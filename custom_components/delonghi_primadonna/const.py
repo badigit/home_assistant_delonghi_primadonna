@@ -48,6 +48,7 @@ NOZZLE_STATE = {
     1: "steam",
     2: "milk_frother",
     3: "milk_frother_cleaning",
+    4: "unknown",
 }
 
 # Skipable maintanence states
