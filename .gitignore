@@ -5,3 +5,21 @@
 .ptp-sync-folder
 __pycache__
 /test.py
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
+
+# beads local (secret + server port)
+.beads/.env
+.beads/dolt-server.port
+.beads/*.db
+
+# Local Claude Code config/skills — personal workflow notes (SSH hosts,
+# paths, infra details), not meant for this public fork/upstream PR
+.claude/
+
+# beads-generated AI agent scaffolding (bd init boilerplate), same reason
+/AGENTS.md
+/CLAUDE.md
