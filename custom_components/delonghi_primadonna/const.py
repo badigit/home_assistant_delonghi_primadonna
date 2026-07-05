@@ -48,7 +48,9 @@ NOZZLE_STATE = {
     1: "steam",
     2: "milk_frother",
     3: "milk_frother_cleaning",
-    4: "unknown",
+    # Observed when the milk-frother regulator is turned to the CLEAN
+    # position; previously mislabelled as "unknown".
+    4: "cleaning",
 }
 
 # Skipable maintanence states

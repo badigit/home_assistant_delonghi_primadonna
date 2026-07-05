@@ -20,6 +20,7 @@ from bleak.exc import BleakDBusError, BleakError
 from homeassistant.components import bluetooth
 from homeassistant.const import CONF_MAC, CONF_MODEL, CONF_NAME
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 
 from .const import (AMERICANO_OFF, AMERICANO_ON, AVAILABLE_PROFILES,
                     BASE_COMMAND, BEVERAGE_NONE, BYTES_AUTOPOWEROFF_COMMAND,
@@ -43,6 +44,11 @@ from .model import get_machine_model
 _LOGGER = logging.getLogger(__name__)
 
 START_BYTE = 0xD0
+
+
+def signal_update(mac: str) -> str:
+    """Dispatcher signal fired when fresh device data arrives."""
+    return f"{DOMAIN}_{mac}_update"
 
 
 @dataclass
@@ -631,6 +637,8 @@ class DelongiPrimadonna:
                 sender
             )
             await self._event_trigger(value)
+            # Push fresh state to entities immediately (no 30s poll wait)
+            async_dispatcher_send(self._hass, signal_update(self.mac))
 
         self._device_status = hex_value
 

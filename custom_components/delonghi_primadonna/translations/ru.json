@@ -69,7 +69,8 @@
           "detached": "Отсоединена",
           "steam": "Пар",
           "milk_frother": "Капучинатор",
-          "milk_frother_cleaning": "Очистка капучинатора"
+          "milk_frother_cleaning": "Очистка капучинатора",
+          "cleaning": "Положение очистки"
         }
       },
       "device_status": {

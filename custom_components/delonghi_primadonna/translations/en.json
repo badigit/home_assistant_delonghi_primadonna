@@ -91,7 +91,8 @@
           "detached": "Detached",
           "steam": "Steam",
           "milk_frother": "Milk frother",
-          "milk_frother_cleaning": "Milk frother cleaning"
+          "milk_frother_cleaning": "Milk frother cleaning",
+          "cleaning": "Cleaning position"
         }
       },
       "switches": {
