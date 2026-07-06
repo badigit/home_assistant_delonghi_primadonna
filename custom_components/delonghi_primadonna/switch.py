@@ -1,6 +1,5 @@
 """Switch entities for Delonghi Primadonna."""
 
-import datetime
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -38,11 +37,8 @@ async def async_setup_entry(
             DelongiPrimadonnaCupLightSwitch(delongh_device, hass),
         )
 
-    if model and model.time_settings:
-        switches.insert(
-            0,
-            DelongiPrimadonnaTimeSyncSwitch(delongh_device, hass),
-        )
+    # Time sync is a one-shot action (set the clock now), so it lives as a
+    # button in button.py, not as a toggle here.
 
     async_add_entities(switches)
     return True
@@ -175,33 +171,3 @@ class DelongiPrimadonnaSoundsSwitch(
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the sounds off."""
         self.hass.async_create_task(self.device.sound_alarm_off())
-
-
-class DelongiPrimadonnaTimeSyncSwitch(
-        DelonghiDeviceEntity, ToggleEntity, RestoreEntity
-):
-    _attr_is_on = False
-    _attr_icon = 'mdi:clock-time-eight-outline'
-    _attr_translation_key = 'time_sync'
-
-    async def async_added_to_hass(self) -> None:
-        await super().async_added_to_hass()
-        if (last_state := await self.async_get_last_state()) is not None:
-            self._attr_is_on = last_state.state == 'on'
-
-    @property
-    def entity_category(self, **kwargs: Any) -> None:
-        """Return the category of the entity."""
-        return EntityCategory.CONFIG
-
-    async def async_turn_on(self, **kwargs: Any) -> None:
-        """Turn the sounds on."""
-        self.hass.async_create_task(
-            self.device.set_time(datetime.datetime.now())
-        )
-        self._attr_is_on = True
-
-    async def async_turn_off(self, **kwargs: Any) -> None:
-        """Turn the sounds off."""
-        self.device.sync_time = False
-        self._attr_is_on = False

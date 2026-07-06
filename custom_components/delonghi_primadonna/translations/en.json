@@ -45,6 +45,9 @@
       },
       "cancel_beverage": {
         "name": "Cancel beverage"
+      },
+      "time_sync": {
+        "name": "Sync clock"
       }
     },
     "switch": {
@@ -59,9 +62,6 @@
       },
       "sounds": {
         "name": "Sounds"
-      },
-      "time_sync": {
-        "name": "Time sync"
       }
     },
     "binary_sensor": {

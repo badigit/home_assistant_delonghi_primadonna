@@ -936,23 +936,27 @@ class DelongiPrimadonna:
             )
             current_offset += 4
 
-        # 2. Subsequent parameters are [ID 2B] + [Value 4B]. Within a
-        # single response these ids are always sequential (start_id,
-        # start_id+1, ...). If a gap appears, the packet has likely been
-        # mis-framed (e.g. the start of the next A2 response leaked into
-        # this one) and the following bytes cannot be trusted as further
-        # entries — stop instead of storing a bogus value under a
-        # legitimate-looking id.
+        # 2. Subsequent parameters are [ID 2B] + [Value 4B]. Within one
+        # response the ids ascend but may SKIP values that don't exist on
+        # the machine (e.g. 100, 101, 105, 106, 108, ...), so a plain
+        # "must be previous+1" check is wrong — it drops every parameter
+        # after the first gap. What actually signals corruption is a pid
+        # that goes backwards/repeats, or one that jumps into a completely
+        # different range (the requested batch spans <~20 ids, while the
+        # ranges themselves — 100s, 3000s, 23000s — sit hundreds apart).
+        # That cross-range jump is exactly how a mis-framed/concatenated
+        # A2 response leaks a foreign id (e.g. 3006) into a 100s reply.
+        RANGE_WINDOW = 200
         while current_offset + 6 <= len(data) - 2:
             pid = (
                 (data[current_offset] << 8)
                 | data[current_offset + 1]
             )
-            if pid != current_param_id + 1:
+            if pid <= current_param_id or pid > start_param_id + RANGE_WINDOW:
                 _LOGGER.debug(
-                    "Statistics Parser: pid %s not sequential after %s, "
-                    "stopping (raw=%s)",
-                    pid, current_param_id, hex_data,
+                    "Statistics Parser: pid %s out of range after %s "
+                    "(start %s), stopping (raw=%s)",
+                    pid, current_param_id, start_param_id, hex_data,
                 )
                 break
             val = int.from_bytes(
