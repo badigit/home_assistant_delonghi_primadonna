@@ -23,3 +23,6 @@ __pycache__
 # beads-generated AI agent scaffolding (bd init boilerplate), same reason
 /AGENTS.md
 /CLAUDE.md
+
+# Beads: runtime-каталог прокси (требуется bd 1.1.0)
+.beads/proxieddb/
